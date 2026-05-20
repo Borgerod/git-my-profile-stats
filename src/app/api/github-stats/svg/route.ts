@@ -3,7 +3,10 @@ import { chromium } from "playwright";
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
 
   try {
     const page = await browser.newPage({
@@ -12,7 +15,7 @@ export async function GET(request: Request) {
     await page.emulateMedia({ colorScheme: "dark" });
     const sourceUrl = new URL("/", request.url).toString();
 
-    await page.goto(sourceUrl, { waitUntil: "networkidle" });
+    await page.goto(sourceUrl, { waitUntil: "domcontentloaded" });
     const element = await page.waitForSelector("#stats-card", {
       state: "visible",
       timeout: 30000,
