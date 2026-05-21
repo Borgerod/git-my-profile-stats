@@ -1,0 +1,9 @@
+HTTP/1.1 200 OK
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+cache-control: public, max-age=3600, stale-while-revalidate=86400
+content-type: image/svg+xml
+Date: Thu, 21 May 2026 17:30:22 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+

@@ -1,0 +1,69 @@
+name: Regenerate Profile Stats SVG
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "15 3 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start app
+        env:
+          GITHUB_TOKEN: ${{ secrets.PROFILE_STATS_TOKEN }}
+        run: |
+          npm run dev > /tmp/next-dev.log 2>&1 &
+          echo $! > /tmp/next-dev.pid
+
+      - name: Wait for app
+        run: |
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:3000/api/github-stats/svg -o /tmp/profile-stats.svg; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/next-dev.log
+          exit 1
+
+      - name: Update tracked SVG
+        run: |
+          mv /tmp/profile-stats.svg public/assets/images/github-stats.svg
+
+      - name: Stop app
+        if: always()
+        run: |
+          if [ -f /tmp/next-dev.pid ]; then
+            kill $(cat /tmp/next-dev.pid) || true
+          fi
+
+      - name: Commit and push if changed
+        run: |
+          if git diff --quiet -- public/assets/images/github-stats.svg; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/assets/images/github-stats.svg
+          git commit -m "chore: regenerate profile stats svg"
+          git push
