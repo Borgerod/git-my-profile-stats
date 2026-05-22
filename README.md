@@ -4,8 +4,10 @@ I had this issue with /github-readme-stats where the total contributions counted
 
 ### How it looks like: 
 <img width="640" height="244" alt="image" src="https://github.com/user-attachments/assets/776893e5-ee31-4121-b132-39c3bd1a1315" />
-_ignore the corners, the final result does not have those_
+<br>
 
+PS:Ignore the corners, the final result does not have those.
+<br>
 
 ## Use in GitHub Profile README
 
