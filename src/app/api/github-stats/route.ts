@@ -25,6 +25,18 @@ const QUERY = `
   }
 `;
 
+type GraphQLResponse = {
+  data?: {
+    user?: {
+      createdAt?: string;
+      publicRepos?: { totalCount?: number };
+      privateRepos?: { totalCount?: number };
+      repositories?: { totalCount?: number };
+    };
+  };
+  errors?: { message?: string }[];
+};
+
 export async function GET() {
   const res = await fetch(GITHUB_API_URL, {
     method: "POST",
@@ -37,10 +49,11 @@ export async function GET() {
 
   if (!res.ok) throw new Error("Failed to fetch GitHub stats");
 
-  const json = await res.json();
-  const user = json.data.user;
+  const json = (await res.json()) as GraphQLResponse;
+  const user = json.data!.user!;
+
   const startDate = new Date("2021-01-06T13:29:33Z");
-  const profStart = new Date(user.createdAt);
+  const profStart = new Date(user.createdAt as string);
 
   const today = new Date();
   const startDiff = today.getFullYear() - startDate.getFullYear();
@@ -76,9 +89,9 @@ export async function GET() {
     // longestStreak: longestStreak,
 
     // * Added fields
-    privateRepos: user.privateRepos.totalCount,
-    publicRepos: user.publicRepos.totalCount,
-    totalRepos: user.repositories.totalCount,
+    privateRepos: user.privateRepos!.totalCount as number,
+    publicRepos: user.publicRepos!.totalCount as number,
+    totalRepos: user.repositories!.totalCount as number,
   };
 
   return Response.json(data);

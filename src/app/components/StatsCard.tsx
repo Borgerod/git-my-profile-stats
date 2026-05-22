@@ -29,23 +29,21 @@ function formatDate(dateValue: Date | string | null | undefined): string {
   return DATE_FORMATTER.format(date);
 }
 
-async function parseJsonOrFallback<T>(
-  response: Response,
-  fallback: T,
-): Promise<T> {
+async function parseJsonOrThrow<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    return fallback;
+    const body = await response.text();
+    throw new Error(body || `Request failed with status ${response.status}`);
   }
 
   const body = await response.text();
   if (!body.trim()) {
-    return fallback;
+    throw new Error("Empty response body");
   }
 
   try {
     return JSON.parse(body) as T;
   } catch {
-    return fallback;
+    throw new Error("Invalid JSON response");
   }
 }
 
@@ -71,6 +69,7 @@ const defaultStats: Stats = {
 };
 export default function StatCard({ className }: ComponentBaseProps) {
   const [stats, setStats] = useState<Stats>(defaultStats);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -80,23 +79,22 @@ export default function StatCard({ className }: ComponentBaseProps) {
       ]);
 
       const [github, githubActivityRaw] = await Promise.all([
-        parseJsonOrFallback<Stats["github"]>(githubRes, defaultStats.github),
-        parseJsonOrFallback<Stats["githubActivity"]>(
-          githubContributionRes,
-          defaultStats.githubActivity,
-        ),
+        parseJsonOrThrow<Stats["github"]>(githubRes),
+        parseJsonOrThrow<Stats["githubActivity"]>(githubContributionRes),
       ]);
       const githubActivity = normalizeGithubActivity(githubActivityRaw);
       setStats({ github, githubActivity });
+      setIsLoaded(true);
     };
 
     fetchStats().catch(() => {
-      setStats(defaultStats);
+      setIsLoaded(false);
     });
   }, []);
   return (
     <Card
       id="stats-card"
+      data-stats-ready={isLoaded ? "true" : "false"}
       className={cn(
         "font-light",
         "h-fit",

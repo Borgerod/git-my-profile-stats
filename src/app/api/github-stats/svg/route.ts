@@ -21,16 +21,19 @@ export async function GET(request: Request) {
     await page.emulateMedia({ colorScheme: "dark" });
     const sourceUrl = new URL("/", request.url).toString();
 
-    await page.goto(sourceUrl, { waitUntil: "domcontentloaded" });
+    await page.goto(sourceUrl, { waitUntil: "networkidle" });
     await page.addStyleTag({
       content:
         "html, body { margin: 0 !important; background: transparent !important; }",
     });
     await page.waitForFunction(() => document.fonts.status === "loaded");
-    const element = await page.waitForSelector("#stats-card", {
+    const element = await page.waitForSelector(
+      '#stats-card[data-stats-ready="true"]',
+      {
       state: "visible",
       timeout: 30000,
-    });
+      },
+    );
     const box = await element.boundingBox();
     if (!box) {
       throw new Error("stats-card bounds not found");
