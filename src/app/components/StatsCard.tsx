@@ -23,7 +23,10 @@ function formatDate(dateValue: Date | string | null | undefined): string {
     return "-";
   }
 
-  return DATE_FORMATTER.format(date);
+  const day = String(date.getUTCDate());
+  const month = String(date.getUTCMonth() + 1);
+  const year = date.getUTCFullYear();
+  return `${day}.${month}.${year}`;
 }
 
 async function parseJsonOrFallback<T>(
