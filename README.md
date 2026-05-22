@@ -2,6 +2,11 @@
 Custom version of /github-readme-stats where total contributions does not include automatic commits. <br>
 I had this issue with /github-readme-stats where the total contributions counted everything, including automatic commits, and since it pushes an update to your repo every day, it results in your total contributions stat to get very bloated after a while, 654 commits in my case. Which is not a truthfull stat. So i made my own. 
 
+### How it looks like: 
+<img width="640" height="244" alt="image" src="https://github.com/user-attachments/assets/776893e5-ee31-4121-b132-39c3bd1a1315" />
+_ignore the corners, the final result does not have those_
+
+
 ## Use in GitHub Profile README
 
 The daily workflow writes this file:
