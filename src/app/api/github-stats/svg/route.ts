@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     await page.emulateMedia({ colorScheme: "dark" });
     const sourceUrl = new URL("/", request.url).toString();
 
-    await page.goto(sourceUrl, { waitUntil: "domcontentloaded" });
+    await page.goto(sourceUrl, { waitUntil: "networkidle" });
     await page.addStyleTag({
       content:
         "html, body { margin: 0 !important; background: transparent !important; }",
@@ -31,16 +31,29 @@ export async function GET(request: Request) {
       state: "visible",
       timeout: 30000,
     });
+    await page.waitForFunction((maxWidth) => {
+      const node = document.querySelector("#stats-card") as HTMLElement | null;
+      if (!node) {
+        return false;
+      }
+
+      const { width, height } = node.getBoundingClientRect();
+      return width > 0 && height > 0 && width < maxWidth;
+    }, VIEWPORT_WIDTH);
     const box = await element.boundingBox();
     if (!box) {
       throw new Error("stats-card bounds not found");
     }
 
+    const left = Math.max(0, Math.floor(box.x));
+    const top = Math.max(0, Math.floor(box.y));
+    const right = Math.min(VIEWPORT_WIDTH, Math.ceil(box.x + box.width));
+    const bottom = Math.min(VIEWPORT_HEIGHT, Math.ceil(box.y + box.height));
     const clip = {
-      x: Math.max(0, box.x),
-      y: Math.max(0, box.y),
-      width: Math.min(box.width, VIEWPORT_WIDTH - box.x),
-      height: Math.min(box.height, VIEWPORT_HEIGHT - box.y),
+      x: left,
+      y: top,
+      width: Math.max(1, right - left),
+      height: Math.max(1, bottom - top),
     };
 
     const png = await page.screenshot({
@@ -49,8 +62,8 @@ export async function GET(request: Request) {
       scale: "device",
       clip,
     });
-    const width = Math.ceil(box.width);
-    const height = Math.ceil(box.height);
+    const width = clip.width;
+    const height = clip.height;
     const base64 = png.toString("base64");
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><image href="data:image/png;base64,${base64}" width="${width}" height="${height}"/></svg>`;
 
