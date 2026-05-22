@@ -108,6 +108,7 @@ export default function StatCard({ className }: ComponentBaseProps) {
         "text-primary",
         "sm:text-secondary",
         className,
+        "bg-[#0d1117]",
         "",
         "",
       )}
@@ -184,8 +185,11 @@ function StatContent({ stats }: { stats: Stats }) {
             {`${formatDate(stats.githubActivity.contributionStart)} - ${formatDate(stats.githubActivity.contributionEnd)}`}
           </span>
         </div>
-        <Separator orientation="vertical" variant="default" />
-
+        <Separator
+          orientation="vertical"
+          variant="default"
+          className="bg-green-400"
+        />
         {/* 
 
  */}
@@ -217,7 +221,11 @@ function StatContent({ stats }: { stats: Stats }) {
             {`${formatDate(stats.githubActivity.currentStreakStart)} - ${formatDate(stats.githubActivity.currentStreakEnd)}`}
           </span>
         </div>
-        <Separator orientation="vertical" variant="default" />
+        <Separator
+          orientation="vertical"
+          variant="default"
+          className="bg-green-400"
+        />
 
         {/* 
 
