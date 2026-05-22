@@ -51,7 +51,7 @@ export async function GET() {
 
   // Fetch activity (streaks, dates, contributions)
   const activityRes = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/github-stats/contributions`,
+    `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/github-stats/contributions`
   );
   if (!activityRes.ok) throw new Error("Failed to fetch activity");
   const githubActivity: GitHubStatsActivity = await activityRes.json();
