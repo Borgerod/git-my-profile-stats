@@ -30,8 +30,8 @@ export async function GET(request: Request) {
     const element = await page.waitForSelector(
       '#stats-card[data-stats-ready="true"]',
       {
-      state: "visible",
-      timeout: 30000,
+        state: "visible",
+        timeout: 30000,
       },
     );
     const box = await element.boundingBox();

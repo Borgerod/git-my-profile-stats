@@ -38,6 +38,10 @@ type GraphQLResponse = {
 };
 
 export async function GET() {
+  if (!process.env.GITHUB_TOKEN) {
+    return Response.json({ error: "Missing GITHUB_TOKEN" }, { status: 500 });
+  }
+
   const res = await fetch(GITHUB_API_URL, {
     method: "POST",
     headers: {
@@ -47,13 +51,31 @@ export async function GET() {
     body: JSON.stringify({ query: QUERY }),
   });
 
-  if (!res.ok) throw new Error("Failed to fetch GitHub stats");
+  if (!res.ok) {
+    return Response.json(
+      { error: "Failed to fetch GitHub stats" },
+      { status: 502 },
+    );
+  }
 
   const json = (await res.json()) as GraphQLResponse;
-  const user = json.data!.user!;
+  if (json.errors?.length) {
+    return Response.json(
+      { error: json.errors[0]?.message || "GitHub GraphQL error" },
+      { status: 502 },
+    );
+  }
+
+  const user = json.data?.user;
+  if (!user?.createdAt) {
+    return Response.json(
+      { error: "Missing user data from GitHub" },
+      { status: 502 },
+    );
+  }
 
   const startDate = new Date("2021-01-06T13:29:33Z");
-  const profStart = new Date(user.createdAt as string);
+  const profStart = new Date(user.createdAt);
 
   const today = new Date();
   const startDiff = today.getFullYear() - startDate.getFullYear();
@@ -89,9 +111,9 @@ export async function GET() {
     // longestStreak: longestStreak,
 
     // * Added fields
-    privateRepos: user.privateRepos!.totalCount as number,
-    publicRepos: user.publicRepos!.totalCount as number,
-    totalRepos: user.repositories!.totalCount as number,
+    privateRepos: user.privateRepos?.totalCount ?? 0,
+    publicRepos: user.publicRepos?.totalCount ?? 0,
+    totalRepos: user.repositories?.totalCount ?? 0,
   };
 
   return Response.json(data);
