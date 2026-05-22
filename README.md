@@ -1,4 +1,6 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Description
+Custom version of /github-readme-stats where total contributions does not include automatic commits. <br>
+I had this issue with /github-readme-stats where the total contributions counted everything, including automatic commits, and since it pushes an update to your repo every day, it results in your total contributions stat to get very bloated after a while, 654 commits in my case. Which is not a truthfull stat. So i made my own. 
 
 ## Use in GitHub Profile README
 
