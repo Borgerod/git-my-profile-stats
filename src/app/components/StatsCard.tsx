@@ -98,7 +98,7 @@ export default function StatCard({ className }: ComponentBaseProps) {
     <Card
       id="stats-card"
       className={cn(
-        "font-light",
+        "",
         "h-fit",
         "w-full",
         "min-h-0",
@@ -166,22 +166,19 @@ function StatContent({ stats }: { stats: Stats }) {
             "gap-2",
           )}
         >
-          <span className="mt-10 text-2xl font-light text-primary! sm:leading-none leading-none text-nowrap self-center ">
+          <span className="mt-10 text-2xl  text-primary! sm:leading-none leading-none text-nowrap self-center ">
             {stats.githubActivity.totalContributions}
           </span>
           <span className="flex flex-col ">
-            <span className="text-xs leading-none sm:leading-2.5 ">
+            <span id="label" className=" text-primary ">
               Total contributions
             </span>
-            <span className="text-xs leading-none sm:leading-2.5 italic">
+            <span className=" font-light text-sm italic">
               excluding automatic commits
             </span>
           </span>
 
-          <span
-            id="date range"
-            className="text-xs leading-none sm:leading-2.5 text-green-400"
-          >
+          <span id="date range" className="  text-xs text-green-400">
             {`${formatDate(stats.githubActivity.contributionStart)} - ${formatDate(stats.githubActivity.contributionEnd)}`}
           </span>
         </div>
@@ -191,6 +188,9 @@ function StatContent({ stats }: { stats: Stats }) {
           className="bg-green-400"
         />
         {/* 
+#77909c gray
+#77909c bg
+#0366d6 blue
 
  */}
 
@@ -208,16 +208,13 @@ function StatContent({ stats }: { stats: Stats }) {
             "gap-2",
           )}
         >
-          <span className="text-xl font-light text-primary! sm:leading-none leading-none text-nowrap self-center ">
+          <span className="text-xl  text-primary! sm:leading-none leading-none text-nowrap self-center ">
             <FancyDisplay currentStreak={stats.githubActivity.currentStreak} />
           </span>
-          <span className="text-xs leading-none sm:leading-2.5 ">
+          <span id="label" className=" text-primary ">
             Current Streak
           </span>
-          <span
-            id="date range"
-            className="text-xs leading-none sm:leading-2.5 text-green-400"
-          >
+          <span id="date range" className="  text-xs text-green-400">
             {`${formatDate(stats.githubActivity.currentStreakStart)} - ${formatDate(stats.githubActivity.currentStreakEnd)}`}
           </span>
         </div>
@@ -246,16 +243,13 @@ function StatContent({ stats }: { stats: Stats }) {
             "gap-2 ",
           )}
         >
-          <span className="mt-10 self-center text-2xl font-light text-primary! sm:leading-none leading-none text-nowrap ">
+          <span className="mt-10 self-center text-2xl  text-primary! sm:leading-none leading-none text-nowrap ">
             {stats.github.totalRepos}
           </span>
-          <span className="text-xs leading-none sm:leading-2.5">
+          <span id="label" className=" text-primary ">
             Longest Streak
           </span>
-          <span
-            id="date range"
-            className="text-xs leading-none sm:leading-2.5 text-green-400"
-          >
+          <span id="date range" className="  text-xs text-green-400">
             {`${formatDate(stats.githubActivity.longestStreakStart)} - ${formatDate(stats.githubActivity.longestStreakEnd)}`}
           </span>
         </div>
