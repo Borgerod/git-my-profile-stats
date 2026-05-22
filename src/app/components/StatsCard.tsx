@@ -8,6 +8,44 @@ import Image from "next/image";
 // import { CircleDollar } from "@gravity-ui/icons";
 import { Card } from "@heroui/react";
 import FancyDisplay from "./FancyDisplay";
+
+const DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
+  timeZone: "UTC",
+});
+
+function formatDate(dateValue: Date | string | null | undefined): string {
+  if (!dateValue) {
+    return "Present";
+  }
+
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return DATE_FORMATTER.format(date);
+}
+
+async function parseJsonOrFallback<T>(
+  response: Response,
+  fallback: T,
+): Promise<T> {
+  if (!response.ok) {
+    return fallback;
+  }
+
+  const body = await response.text();
+  if (!body.trim()) {
+    return fallback;
+  }
+
+  try {
+    return JSON.parse(body) as T;
+  } catch {
+    return fallback;
+  }
+}
+
 const defaultStats: Stats = {
   github: {
     yearsExp: 0,
@@ -37,11 +75,21 @@ export default function StatCard({ className }: ComponentBaseProps) {
         fetch("/api/github-stats"),
         fetch("/api/github-stats/contributions"),
       ]);
-      const github = await githubRes.json();
-      const githubActivity = await githubContributionRes.json();
+
+      const [github, githubActivity] = await Promise.all([
+        parseJsonOrFallback<Stats["github"]>(githubRes, defaultStats.github),
+        parseJsonOrFallback<Stats["githubActivity"]>(
+          githubContributionRes,
+          defaultStats.githubActivity,
+        ),
+      ]);
+
       setStats({ github, githubActivity });
     };
-    fetchStats();
+
+    fetchStats().catch(() => {
+      setStats(defaultStats);
+    });
   }, []);
   return (
     <Card
@@ -131,7 +179,7 @@ function StatContent({ stats }: { stats: Stats }) {
             id="date range"
             className="text-xs leading-none sm:leading-2.5 text-green-400"
           >
-            {`${new Date(stats.githubActivity.contributionStart).toLocaleDateString()} - ${stats.githubActivity.contributionEnd ? new Date(stats.githubActivity.contributionEnd).toLocaleDateString() : "Present"}`}
+            {`${formatDate(stats.githubActivity.contributionStart)} - ${formatDate(stats.githubActivity.contributionEnd)}`}
           </span>
         </div>
         <Separator orientation="vertical" variant="default" />
@@ -164,7 +212,7 @@ function StatContent({ stats }: { stats: Stats }) {
             id="date range"
             className="text-xs leading-none sm:leading-2.5 text-green-400"
           >
-            {`${new Date(stats.githubActivity.currentStreakStart).toLocaleDateString()} - ${new Date(stats.githubActivity.currentStreakEnd).toLocaleDateString()}`}
+            {`${formatDate(stats.githubActivity.currentStreakStart)} - ${formatDate(stats.githubActivity.currentStreakEnd)}`}
           </span>
         </div>
         <Separator orientation="vertical" variant="default" />
@@ -198,7 +246,7 @@ function StatContent({ stats }: { stats: Stats }) {
             id="date range"
             className="text-xs leading-none sm:leading-2.5 text-green-400"
           >
-            {`${new Date(stats.githubActivity.longestStreakStart).toLocaleDateString()} - ${new Date(stats.githubActivity.longestStreakEnd).toLocaleDateString()}`}
+            {`${formatDate(stats.githubActivity.longestStreakStart)} - ${formatDate(stats.githubActivity.longestStreakEnd)}`}
           </span>
         </div>
       </div>
