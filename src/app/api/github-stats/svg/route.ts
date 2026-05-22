@@ -2,6 +2,10 @@ import { chromium } from "playwright";
 
 export const runtime = "nodejs";
 
+const VIEWPORT_WIDTH = 1200;
+const VIEWPORT_HEIGHT = 800;
+const DEVICE_SCALE_FACTOR = 3;
+
 export async function GET(request: Request) {
   const browser = await chromium.launch({
     headless: true,
@@ -9,13 +13,20 @@ export async function GET(request: Request) {
   });
 
   try {
-    const page = await browser.newPage({
-      viewport: { width: 1200, height: 800 },
+    const context = await browser.newContext({
+      viewport: { width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT },
+      deviceScaleFactor: DEVICE_SCALE_FACTOR,
     });
+    const page = await context.newPage();
     await page.emulateMedia({ colorScheme: "dark" });
     const sourceUrl = new URL("/", request.url).toString();
 
     await page.goto(sourceUrl, { waitUntil: "domcontentloaded" });
+    await page.addStyleTag({
+      content:
+        "html, body { margin: 0 !important; background: transparent !important; }",
+    });
+    await page.waitForFunction(() => document.fonts.status === "loaded");
     const element = await page.waitForSelector("#stats-card", {
       state: "visible",
       timeout: 30000,
@@ -25,11 +36,25 @@ export async function GET(request: Request) {
       throw new Error("stats-card bounds not found");
     }
 
-    const png = await element.screenshot({ type: "png", omitBackground: true });
+    const clip = {
+      x: Math.max(0, box.x),
+      y: Math.max(0, box.y),
+      width: Math.min(box.width, VIEWPORT_WIDTH - box.x),
+      height: Math.min(box.height, VIEWPORT_HEIGHT - box.y),
+    };
+
+    const png = await page.screenshot({
+      type: "png",
+      omitBackground: true,
+      scale: "device",
+      clip,
+    });
     const width = Math.ceil(box.width);
     const height = Math.ceil(box.height);
     const base64 = png.toString("base64");
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><image href="data:image/png;base64,${base64}" width="${width}" height="${height}"/></svg>`;
+
+    await context.close();
 
     return new Response(svg, {
       headers: {

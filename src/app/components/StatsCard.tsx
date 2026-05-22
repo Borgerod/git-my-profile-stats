@@ -101,7 +101,6 @@ export default function StatCard({ className }: ComponentBaseProps) {
         "font-light",
         "h-fit",
         "w-full",
-        "h-full",
         "min-h-0",
         "min-h-45",
         "text-secondary",
