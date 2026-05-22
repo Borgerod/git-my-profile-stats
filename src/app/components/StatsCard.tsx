@@ -109,6 +109,7 @@ export default function StatCard({ className }: ComponentBaseProps) {
         "sm:text-secondary",
         className,
         "bg-[#0d1117]",
+        "rounded-none",
         "",
         "",
       )}
