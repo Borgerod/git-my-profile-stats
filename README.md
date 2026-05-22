@@ -12,6 +12,12 @@ Use this image URL in your profile README:
 ![GitHub Stats](https://raw.githubusercontent.com/borgerod/git-my-profile-stats/main/public/assets/images/github-stats.svg)
 ```
 
+Or like this:
+
+```md
+  <img style="height:200px; width:auto; margin:0px; margin-left:20px;" src="https://raw.githubusercontent.com/borgerod/git-my-profile-stats/main/public/assets/images/github-stats.svg" />
+```
+
 If GitHub image cache is sticky, use a cache-busting query in your profile README:
 
 ```md
