@@ -10,6 +10,9 @@ import { Card } from "@heroui/react";
 import FancyDisplay from "./FancyDisplay";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
   timeZone: "UTC",
 });
 
@@ -23,10 +26,7 @@ function formatDate(dateValue: Date | string | null | undefined): string {
     return "-";
   }
 
-  const day = String(date.getUTCDate());
-  const month = String(date.getUTCMonth() + 1);
-  const year = date.getUTCFullYear();
-  return `${day}.${month}.${year}`;
+  return DATE_FORMATTER.format(date);
 }
 
 async function parseJsonOrFallback<T>(
@@ -79,14 +79,14 @@ export default function StatCard({ className }: ComponentBaseProps) {
         fetch("/api/github-stats/contributions"),
       ]);
 
-      const [github, githubActivity] = await Promise.all([
+      const [github, githubActivityRaw] = await Promise.all([
         parseJsonOrFallback<Stats["github"]>(githubRes, defaultStats.github),
         parseJsonOrFallback<Stats["githubActivity"]>(
           githubContributionRes,
           defaultStats.githubActivity,
         ),
       ]);
-
+      const githubActivity = normalizeGithubActivity(githubActivityRaw);
       setStats({ github, githubActivity });
     };
 
@@ -98,7 +98,7 @@ export default function StatCard({ className }: ComponentBaseProps) {
     <Card
       id="stats-card"
       className={cn(
-        "",
+        "font-light",
         "h-fit",
         "w-full",
         "min-h-0",
@@ -106,16 +106,15 @@ export default function StatCard({ className }: ComponentBaseProps) {
         "text-secondary",
         "grid",
         "text-primary",
-        "sm:text-secondary",
+        "bg-background",
         className,
-        "bg-[#0d1117]",
         "",
         "",
       )}
     >
       <Card.Header>
         <Card.Title>GitHub Stats</Card.Title>
-        <Card.Description>
+        <Card.Description className="text-secondary">
           Repositories: {stats.github.totalRepos} | public:{" "}
           {stats.github.publicRepos}
         </Card.Description>
@@ -144,6 +143,22 @@ export default function StatCard({ className }: ComponentBaseProps) {
 }
 
 function StatContent({ stats }: { stats: Stats }) {
+  const toDate = (value: string | Date) =>
+    value instanceof Date ? value : new Date(value);
+
+  const normalizedStats = {
+    github: stats.github,
+    githubActivity: {
+      ...stats.githubActivity,
+      contributionStart: toDate(stats.githubActivity.contributionStart),
+      contributionEnd: toDate(stats.githubActivity.contributionEnd),
+      currentStreakStart: toDate(stats.githubActivity.currentStreakStart),
+      currentStreakEnd: toDate(stats.githubActivity.currentStreakEnd),
+      longestStreakStart: toDate(stats.githubActivity.longestStreakStart),
+      longestStreakEnd: toDate(stats.githubActivity.longestStreakEnd),
+    },
+  };
+
   return (
     <>
       <div id="Top content" className={cn("grid", "grid-cols-3", "", "")}></div>
@@ -156,104 +171,111 @@ function StatContent({ stats }: { stats: Stats }) {
           className={cn(
             "flex flex-col",
             "items-center",
-            // "justify-end",
-            // "h-fit",
-            // "self-end",
-            // "justify-items-center",
             "justify-between",
-            // "h-full",
             "text-center",
             "gap-2",
           )}
         >
-          <span className="mt-10 text-2xl  text-primary! sm:leading-none leading-none text-nowrap self-center ">
-            {stats.githubActivity.totalContributions}
+          <span
+            id="value"
+            className="text-2xl font-semibold mt-10  text-primary sm:leading-none leading-none text-nowrap self-center "
+          >
+            {normalizedStats.githubActivity.totalContributions}
           </span>
           <span className="flex flex-col ">
-            <span id="label" className=" text-primary ">
-              Total contributions
+            <span id="label" className="text-primary ">
+              Total Contributions
             </span>
-            <span className=" font-light text-sm italic">
+            <span className="text-xs text-secondary  italic">
               excluding automatic commits
             </span>
           </span>
 
-          <span id="date range" className="  text-xs text-green-400">
-            {`${formatDate(stats.githubActivity.contributionStart)} - ${formatDate(stats.githubActivity.contributionEnd)}`}
+          <span id="date range" className="text-xs  text-accent-primary">
+            {`${formatDate(stats.githubActivity.contributionStart)} - Present`}
           </span>
         </div>
         <Separator
           orientation="vertical"
           variant="default"
-          className="bg-green-400"
+          className="bg-accent-primary"
         />
-        {/* 
-#77909c gray
-#77909c bg
-#0366d6 blue
-
- */}
 
         <div
           className={cn(
             "flex flex-col",
             "items-center",
-            // "justify-end",
-            // "h-fit",
-            // "self-end",
-            // "justify-items-center",
             "justify-between",
-            // "h-full",
             "text-center",
             "gap-2",
           )}
         >
-          <span className="text-xl  text-primary! sm:leading-none leading-none text-nowrap self-center ">
-            <FancyDisplay currentStreak={stats.githubActivity.currentStreak} />
+          <span
+            id="value"
+            className="text-2xl font-semibold text-primary sm:leading-none leading-none text-nowrap self-center "
+          >
+            <FancyDisplay
+              currentStreak={normalizedStats.githubActivity.currentStreak}
+            />
           </span>
-          <span id="label" className=" text-primary ">
+          <span id="label" className="text-primary  font-bold">
             Current Streak
           </span>
-          <span id="date range" className="  text-xs text-green-400">
-            {`${formatDate(stats.githubActivity.currentStreakStart)} - ${formatDate(stats.githubActivity.currentStreakEnd)}`}
+
+          <span id="date range" className="text-xs  text-accent-primary">
+            {normalizedStats.githubActivity.currentStreakStart.getFullYear() ===
+            normalizedStats.githubActivity.currentStreakEnd.getFullYear()
+              ? `${normalizedStats.githubActivity.currentStreakStart.toLocaleString("en-US", { month: "short", day: "numeric" })} - ${normalizedStats.githubActivity.currentStreakEnd.toLocaleString("en-US", { month: "short", day: "numeric" })}`
+              : `${normalizedStats.githubActivity.currentStreakStart.toLocaleString("en-US", { month: "short", year: "numeric" })} - ${normalizedStats.githubActivity.currentStreakEnd.toLocaleString("en-US", { month: "short", year: "numeric" })}`}
           </span>
         </div>
         <Separator
           orientation="vertical"
           variant="default"
-          className="bg-green-400"
+          className="bg-accent-primary"
         />
-
-        {/* 
-
-
- */}
 
         <div
           className={cn(
             "flex flex-col",
             "items-center",
-            // "justify-end",
-            // "h-fit",
-            // "self-end",
-            // "justify-items-center",
             "justify-between",
-            // "h-full",
             "text-center",
             "gap-2 ",
           )}
         >
-          <span className="mt-10 self-center text-2xl  text-primary! sm:leading-none leading-none text-nowrap ">
-            {stats.github.totalRepos}
+          <span
+            id="value"
+            className="text-2xl font-semibold mt-10 self-center   text-primary sm:leading-none leading-none text-nowrap "
+          >
+            {normalizedStats.githubActivity.longestStreak}
           </span>
-          <span id="label" className=" text-primary ">
+          <span id="label" className="text-primary  ">
             Longest Streak
           </span>
-          <span id="date range" className="  text-xs text-green-400">
-            {`${formatDate(stats.githubActivity.longestStreakStart)} - ${formatDate(stats.githubActivity.longestStreakEnd)}`}
+          <span id="date range" className="text-xs  text-accent-primary">
+            {`${formatDate(normalizedStats.githubActivity.longestStreakStart)} - ${formatDate(normalizedStats.githubActivity.longestStreakEnd)}`}
           </span>
         </div>
       </div>
     </>
   );
+}
+
+function normalizeGithubActivity(
+  activityRaw: Stats["githubActivity"],
+): Stats["githubActivity"] {
+  const normalized: Stats["githubActivity"] = {
+    totalContributions: activityRaw.totalContributions,
+    contributionStart: activityRaw.contributionStart,
+    contributionEnd: activityRaw.contributionEnd,
+    currentStreak: activityRaw.currentStreak,
+    currentStreakStart: activityRaw.currentStreakStart,
+    currentStreakEnd: activityRaw.currentStreakEnd,
+    longestStreak: activityRaw.longestStreak,
+    longestStreakStart: activityRaw.longestStreakStart,
+    longestStreakEnd: activityRaw.longestStreakEnd,
+  };
+
+  return normalized;
 }

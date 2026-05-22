@@ -1,7 +1,7 @@
-// import { GitHubStatsUser, github } from "@/lib/types";
 import { Card } from "@heroui/react";
 import { cn } from "@heroui/styles";
 import { MdWhatshot } from "react-icons/md";
+
 export default function FancyDisplay({
   currentStreak,
 }: {
@@ -30,7 +30,7 @@ export default function FancyDisplay({
           "rounded-full",
           "border-4",
           "mt-2",
-          "border-green-400",
+          "border-accent-primary",
           "size-20",
           "col-start-1",
           "col-span-full",
@@ -40,12 +40,7 @@ export default function FancyDisplay({
           "",
         )}
       >
-        <div
-          id="content"
-          className={cn(
-            "text-2xl font-light text-primary sm:leading-none leading-none text-nowrap",
-          )}
-        >
+        <div id="content" className={cn(" text-primary")}>
           {currentStreak ? currentStreak.toString() : "XX"}
         </div>
       </div>
@@ -62,7 +57,13 @@ export default function FancyDisplay({
           "",
         )}
       >
-        <MdWhatshot className={cn("font-black", "text-blue-500")} />
+        <MdWhatshot
+          className={cn(
+            "font-black",
+            "text-accent-secondary",
+            "text-xl font-light",
+          )}
+        />
       </Card>
     </div>
   );
