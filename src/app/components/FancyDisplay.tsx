@@ -41,7 +41,7 @@ export default function FancyDisplay({
         )}
       >
         <div id="content" className={cn(" text-primary")}>
-          {currentStreak ? currentStreak.toString() : "XX"}
+          {currentStreak ? currentStreak.toString() : "0"}
         </div>
       </div>
       <Card
